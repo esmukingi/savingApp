@@ -4,7 +4,11 @@ const categorySchema = mongoose.Schema({
     category:{
         type: String,
         required: true
-    }
+    },
+    link:{
+        type: String,
+        required: true
+    },
 }, {
     timestamp: true
 });

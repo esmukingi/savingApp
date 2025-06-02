@@ -1,11 +1,15 @@
 import Category from '../models/category.model.js';
 
-export const addCat = async (req, res) => {
+export const addCategory = async (req, res) => {
   try {
-    const { category } = req.body; 
+    const { category, link } = req.body; 
 
+    if(!category || !link){
+      return res.status(400).json({message: "Bad Request"});
+    }
     const newCat = new Category({
-      category
+      category,
+      link
     });
 
     await newCat.save();
@@ -23,3 +27,16 @@ export const addCat = async (req, res) => {
     });
   }
 };
+export const getCategories = async (req, res) =>{
+  try {
+    const categories = await Category.find();
+    if(!categories){
+      return res.status(404).json({message: "No Categories Found"});
+    }
+    res.json({
+      categories
+    })
+  } catch (error) {
+    console.log(error);
+  }
+}

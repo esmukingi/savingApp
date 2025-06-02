@@ -1,129 +1,331 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Save, Settings, Bell, User, Lock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Save, Settings, User, Shield, Palette, Globe, Smartphone, Edit3, Key, Database, Lock, AlertCircle, CheckCircle, Sun, Moon } from "lucide-react";
 import { useAuthStore } from "../store/auth.store";
 import toast from "react-hot-toast";
+
 const SettingsPage = () => {
+  const { authUser, changePassword, isPasswordChanging } = useAuthStore();
 
-  const {authUser} = useAuthStore();
-  const [username, setUsername] = useState("Imanizibyose Chadrack");
-  const [email, setEmail] = useState("imanizibyosechadrack@gmail.com");
-  const [notifications, setNotifications] = useState(true);
+  const [profileData, setProfileData] = useState({
+    username: "Imanizibyose Chadrack",
+    email: "imanizibyosechadrack@gmail.com",
+    phone: "+250 789 506 049",
+    bio: "A self entrepreneur and patron at Apeki Tumba Tss.",
+    location: "Kigali, Rwanda",
+    website: "https://chadrack.info"
+  });
 
-  const handleSave = (e) => {
+  const [securitySettings, setSecuritySettings] = useState({
+    twoFactorAuth: false,
+    passwordChanged: "2024-01-15",
+    loginAlerts: true,
+    dataEncryption: true
+  });
+
+  const [appearanceSettings, setAppearanceSettings] = useState({
+    theme: "light",
+    language: "en",
+    timezone: "Africa/Kigali",
+  });
+
+  const [activeTab, setActiveTab] = useState("profile");
+  const [isLoading, setIsLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+
+  const tabs = [
+    { id: "profile", label: "Profile", icon: User },
+    { id: "security", label: "Security", icon: Shield },
+    { id: "appearance", label: "Appearance", icon: Palette },
+    { id: "data", label: "Data & Privacy", icon: Database }
+  ];
+
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!authUser) {
-      toast.error('You must be logged in to Chnage the data')
+      toast.error('You must be logged in to change the data');
       return;
     }
-    console.log("Settings saved:", { username, email, notifications });
+
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    toast.success('Settings saved successfully!');
+    setIsLoading(false);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-secondary/20 p-6 flex items-center justify-center">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="bg-white/90 backdrop-blur border border-gray-200 rounded-xl shadow-xl p-8 max-w-md w-full space-y-6"
+  const handlePasswordChange = async () => {
+    if (!authUser) {
+      toast.error('You must be logged in to change the password');
+      return;
+    }
+    if (!newPassword) {
+      toast.error('Please enter a new password');
+      return;
+    }
+    changePassword(newPassword);
+  };
+
+  const TabButton = ({ tab, isActive, onClick }) => {
+    const IconComponent = tab.icon;
+    return (
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onClick}
+        className={`
+          relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+          ${isActive
+            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          }
+        `}
       >
-        <div className="flex flex-col items-center text-center space-y-2">
+        <IconComponent className="w-5 h-5" />
+        <span className="font-medium hidden md:inline">{tab.label}</span>
+        {isActive && (
           <motion.div
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 6, repeat: Infinity }}
-          >
-            <Settings className="w-12 h-12 text-primary" />
-          </motion.div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-500">Manage your account preferences below</p>
+            layoutId="activeTab"
+            className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl -z-10"
+          />
+        )}
+      </motion.button>
+    );
+  };
+
+  const ProfileSection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="grid md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <User className="inline w-4 h-4 mr-2 text-blue-500" />
+            Full Name
+          </label>
+          <input
+            type="text"
+            value={profileData.username}
+            onChange={(e) => setProfileData({...profileData, username: e.target.value})}
+            disabled={!authUser}
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100"
+          />
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4">
-          {/* Username */}
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              <User className="inline w-4 h-4 mr-1 text-primary" />
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={!authUser}
-              className={`w-full px-4 py-2 rounded-md border border-gray-300 transition ${
-                authUser
-                  ? "focus:outline-none focus:ring-2 focus:ring-primary"
-                  : "bg-gray-100 cursor-not-allowed"
-              }`}
-            />
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <Smartphone className="inline w-4 h-4 mr-2 text-blue-500" />
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            value={profileData.phone}
+            onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+            disabled={!authUser}
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <Globe className="inline w-4 h-4 mr-2 text-blue-500" />
+            Location
+          </label>
+          <input
+            type="text"
+            value={profileData.location}
+            onChange={(e) => setProfileData({...profileData, location: e.target.value})}
+            disabled={!authUser}
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100"
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  const SecuritySection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="p-6 bg-white border border-gray-200 rounded-xl">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Key className="w-5 h-5 text-blue-500" />
+          Password & Authentication
+        </h3>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Password</p>
+              <p className="text-sm text-gray-500">Last changed: {securitySettings.passwordChanged}</p>
+            </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              <User className="inline w-4 h-4 mr-1 text-primary" />
-              Email
-            </label>
+          <div className="flex flex-col p-4 bg-gray-50 rounded-lg gap-2">
+            <p className="font-medium text-gray-900">New Password</p>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={!authUser}
-              className={`w-full px-4 py-2 rounded-md border border-gray-300 transition ${
-                authUser
-                  ? "focus:outline-none focus:ring-2 focus:ring-primary"
-                  : "bg-gray-100 cursor-not-allowed"
-              }`}
-            />
-          </div>
-
-          {/* Notifications Toggle */}
-          <div className="flex items-center justify-between">
-            <label htmlFor="notifications" className="flex items-center text-sm font-medium text-gray-700">
-              <Bell className="w-4 h-4 mr-1 text-primary" />
-              Enable Notifications
-            </label>
-            <input
-              id="notifications"
-              type="checkbox"
-              checked={notifications}
-              onChange={() => setNotifications(!notifications)}
-              disabled={!authUser}
-              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer disabled:cursor-not-allowed"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
+              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             />
           </div>
 
           <motion.button
-            whileHover={{ scale: authUser ? 1.03 : 1 }}
-            whileTap={{ scale: authUser ? 0.97 : 1 }}
-            type="submit"
-            disabled={!authUser}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md transition duration-300 font-medium shadow ${
-              authUser
-                ? "bg-primary text-black hover:bg-primary/80"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handlePasswordChange}
+            disabled={!authUser || isPasswordChanging}
+            className={`
+              w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg
+              ${authUser && !isPasswordChanging
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-xl hover:from-blue-600 hover:to-indigo-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }
+            `}
           >
-            {authUser ? (
+            {isPasswordChanging ? (
               <>
-                <Save className="w-4 h-4" />
-                Save Changes
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Changing Password...
               </>
             ) : (
               <>
-                <Lock className="w-4 h-4" />
-                Login to Edit
+                <Key className="w-5 h-5" />
+                Change Password
               </>
             )}
           </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
 
-          {!authUser && (
-            <p className="text-center text-xs text-red-500">⚠️ You must be logged in to change settings.</p>
+  const AppearanceSection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="p-6 bg-white border border-gray-200 rounded-xl">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Palette className="w-5 h-5 text-blue-500" />
+          Theme Preferences
+        </h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { value: 'light', label: 'Light', icon: Sun },
+            { value: 'dark', label: 'Dark', icon: Moon },
+          ].map((theme) => (
+            <button
+              key={theme.value}
+              onClick={() => setAppearanceSettings({...appearanceSettings, theme: theme.value})}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                appearanceSettings.theme === theme.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <theme.icon className="w-6 h-6 mx-auto mb-2 text-gray-600" />
+              <p className="text-sm font-medium">{theme.label}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  const DataSection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="p-6 bg-white border border-gray-200 rounded-xl">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Database className="w-5 h-5 text-blue-500" />
+          Data Management
+        </h3>
+
+        <div className="space-y-4">
+          <button className="w-full flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <div className="text-left">
+                <p className="font-medium text-gray-900">Delete Account</p>
+                <p className="text-sm text-gray-500">Permanently delete your account</p>
+              </div>
+            </div>
+            <Lock className="w-5 h-5 text-red-500" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "profile": return <ProfileSection />;
+      case "security": return <SecuritySection />;
+      case "appearance": return <AppearanceSection />;
+      case "data": return <DataSection />;
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto py-10 px-4 space-y-8">
+      <div className="flex items-center gap-3 text-2xl font-semibold text-gray-800">
+        <Settings className="w-6 h-6 text-blue-500" />
+        Settings
+      </div>
+
+      <div className="flex flex-wrap gap-2 md:gap-4">
+        {tabs.map((tab) => (
+          <TabButton
+            key={tab.id}
+            tab={tab}
+            isActive={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+          />
+        ))}
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-6">
+        <AnimatePresence mode="wait">
+          {renderTabContent()}
+        </AnimatePresence>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="submit"
+          disabled={isLoading}
+          className={`
+            w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg
+            ${!isLoading
+              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-xl hover:from-blue-600 hover:to-indigo-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }
+          `}
+        >
+          {isLoading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="w-5 h-5" />
+              Save Changes
+            </>
           )}
-        </form>
-      </motion.div>
+        </motion.button>
+      </form>
     </div>
   );
 };
