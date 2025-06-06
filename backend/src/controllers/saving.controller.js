@@ -113,15 +113,82 @@ export const updateSpecificMonthSaving = async (req, res) => {
       res.status(500).json({ message: "Server error. Please try again." });
     }
 };
-export const getSavings = async (req, res) => {
+
+export const getSavingsForClass = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const savings = await UserSaving.find({ user: userId }).sort({ createdAt: -1 });
+    const savings = await UserSaving.find({
+      userId,
+      "categories.name": "Class Service",
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      data: savings,
+      savings,
+    });
+  } catch (error) {
+    console.error("Error fetching savings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+export const getSavingsForLand = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const savings = await UserSaving.find({
+      userId,
+      "categories.name": "Land",
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      savings,
+    });
+  } catch (error) {
+    console.error("Error fetching savings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+export const getSavingsForDriving = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const savings = await UserSaving.find({
+      userId,
+      "categories.name": "Driving Licence",
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      savings,
+    });
+  } catch (error) {
+    console.error("Error fetching savings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+export const getSavingsForBussiness = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const savings = await UserSaving.find({
+      userId,
+      "categories.name": "Bussiness Enterpreneur",
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      savings,
     });
   } catch (error) {
     console.error("Error fetching savings:", error);

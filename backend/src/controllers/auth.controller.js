@@ -4,6 +4,55 @@ import User from "../models/user.model.js"
 import {generateToken} from '../lib/token.js'
 export const login = async (req, res) =>{
     const { email, password } = req.body;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
   try {
     const user = await User.findOne({ email });
 

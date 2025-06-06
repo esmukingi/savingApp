@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const categoryEnum = [
-  "Saving Class",
+  "Class Service",
   "Driving Licence",
   "Land",
   "Business Entrepreneur",
@@ -19,7 +19,7 @@ const CategoryYearlySavingSchema = new mongoose.Schema({
 
 const CategorySchema = new mongoose.Schema({
   name: { type: String, enum: categoryEnum, required: true },
-  goal: { type: Number, required: true, default: 1000 },
+  amount: { type: Number, required: true, default: 1000 },
   yearlySavings: [CategoryYearlySavingSchema],
 });
 
